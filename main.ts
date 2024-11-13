@@ -2,10 +2,10 @@
 //% groups="['ESP8266', 'Tello']"
 
 namespace TelloControl {
-    // Initialize the connection variables
+    // Initialize the variables
     let telloIP = "192.168.10.1";
     let commandPort = 8889;
-    const threshold = 15; // Thresholds to control sensitivity
+    const threshold = 20; // Threshold to control sensitivity
 
     // Function to read and display response on the micro:bit
     function readResponse(): void {
@@ -19,7 +19,7 @@ namespace TelloControl {
     }
 
     function sendCommandToTello(command: string): void {
-        // Assuming you're already connected to Tello WiFi
+        // Assuming you're already connected to Tello WiFi, have set up UDP connection and initialisd the Tello into SDK mode
         sendAT(`AT+CIPSEND=${command.length}`, 500);  // Send command length and command
         serial.writeString(command + "\r\n"); // Send the actual command
         basic.pause(500);
@@ -54,30 +54,51 @@ namespace TelloControl {
         let x = input.acceleration(Dimension.X);
         let y = input.acceleration(Dimension.Y);
         let z = input.acceleration(Dimension.Z);
+// Determine the absolute strongest tilt axis first 
+// so that it is only focusig on one movement at a time
 
-        // Forward and backward control (Y-axis tilt, pitch)
-        if (Math.abs(y) > Math.abs(x) && Math.abs(y) > Math.abs(z)) {   // Determine the absolute strongest tilt axis
+        // Forward and backward control (Y-axis tilt strongest, pitch)
+        if (Math.abs(y) > Math.abs(x) && Math.abs(y) > Math.abs(z)) {   
             if (y > threshold) {
-                sendCommandToTello("forward 20"); // Move forward
-            } else if (y < -threshold) {
-                sendCommandToTello("back 20"); // Move backward
+                while (y > threshold) { // Continuously move forward while tilted forward
+                    sendCommandToTello("forward 20"); // Move forward
+                    basic.pause(500); // Delay to prevent flooding commands
+                    y = input.acceleration(Dimension.Y); // Update Y-axis to check strongest tilt again
+                }
+            } else if (y < -threshold) { // Continuously move backward while tilted backward
+                while (y < -threshold) {
+                    sendCommandToTello("back 20"); // Move backward
+                    basic.pause(500); 
+                    y = input.acceleration(Dimension.Y); 
+                }
             }
         } 
-        // Left and right control (X-axis tilt, roll)
+        // Left and right control (X-axis tilt strongest, roll)
         else if (Math.abs(x) > Math.abs(y) && Math.abs(x) > Math.abs(z)) {
-            if (x > threshold) {
+            while (x > threshold) { 
                 sendCommandToTello("right 20"); // Move right
-            } else if (x < -threshold) {
+                basic.pause(500);
+                x = input.acceleration(Dimension.X); // Update X-axis 
+            }
+        } else if (x < -threshold) {
+            while (x < -threshold) { 
                 sendCommandToTello("left 20"); // Move left
+                basic.pause(500);
+                x = input.acceleration(Dimension.X); // Update X-axis
             }
         }
-        // Up and down control (Z-axis tilt, yaw)
-        else if (Math.abs(z) > Math.abs(x) && Math.abs(z) > Math.abs(y)) {
-            // Z-axis tilt is the strongest
-            if (z < 800) { // Assuming resting Z-axis is around 1023
-                sendCommandToTello("up 20"); // Move up
-            } else if (z > 1200) {
-                sendCommandToTello("down 20"); // Move down
+        // Up and down control (Z-axis tilt strongest, yaw)
+        else if (Math.abs(z) > Math.abs(x) && Math.abs(z) > Math.abs(y)) { 
+            while (z < 800) { 
+                sendCommandToTello("up 20");    // Move up
+                basic.pause(500);
+                z = input.acceleration(Dimension.Z); // Update Z-axis
+            }
+        } else if (z > 1200) {
+            while (z > 1200) { 
+                sendCommandToTello("down 20");  // Move down
+                basic.pause(500);
+                z = input.acceleration(Dimension.Z); // Update Z-axis 
             }
         }
     }
@@ -97,10 +118,10 @@ namespace TelloControl {
     //% block="Wi-Fi connected"
     //% group="ESP8266"
     export function isWiFiConnected(): boolean {
-        sendAT("AT+CWJAP?"); // This command checks the current Wi-Fi status
+        sendAT("AT+CWJAP?"); // Checks the current Wi-Fi status
         basic.pause(500); // Give time to get the response
 
-        let response = serial.readString(); // Read response from ESP8266
+        let response = serial.readString(); // Reads response from ESP8266
 
         if (response.includes("No AP")) {
             return false; // Not connected
@@ -125,7 +146,7 @@ namespace TelloControl {
     //% group="Tello"
     //% block="connect to Tello Wi-Fi SSID %ssid"
     export function connectToWiFi(ssid: string): void {
-        sendAT(`AT+CWJAP="${ssid}",""`, 5000); // Assuming no password is required
+        sendAT(`AT+CWJAP="${ssid}",""`, 5000); // No password is required
         readResponse(); // Display response on micro:bit
     }
 }
