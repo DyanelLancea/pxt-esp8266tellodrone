@@ -65,8 +65,8 @@ namespace TelloControl {
                     basic.pause(500); // Delay to prevent flooding commands
                     y = input.acceleration(Dimension.Y); // Update Y-axis to check strongest tilt again
                 }
-            } else if (y < -threshold) { // Continuously move backward while tilted backward
-                while (y < -threshold) {
+            } else if (y < threshold) { // Continuously move backward while tilted backward
+                while (y < threshold) {
                     sendCommandToTello("back 20"); // Move backward
                     basic.pause(500); 
                     y = input.acceleration(Dimension.Y); 
@@ -80,8 +80,8 @@ namespace TelloControl {
                 basic.pause(500);
                 x = input.acceleration(Dimension.X); // Update X-axis 
             }
-        } else if (x < -threshold) {
-            while (x < -threshold) { 
+        } else if (x < threshold) {
+            while (x < threshold) { 
                 sendCommandToTello("left 20"); // Move left
                 basic.pause(500);
                 x = input.acceleration(Dimension.X); // Update X-axis
@@ -89,13 +89,13 @@ namespace TelloControl {
         }
         // Up and down control (Z-axis tilt strongest, yaw)
         else if (Math.abs(z) > Math.abs(x) && Math.abs(z) > Math.abs(y)) { 
-            while (z < 800) { 
+            while (z < threshold) {
                 sendCommandToTello("up 20");    // Move up
                 basic.pause(500);
                 z = input.acceleration(Dimension.Z); // Update Z-axis
             }
-        } else if (z > 1200) {
-            while (z > 1200) { 
+        } else if (z > threshold) {
+            while (z > threshold) {
                 sendCommandToTello("down 20");  // Move down
                 basic.pause(500);
                 z = input.acceleration(Dimension.Z); // Update Z-axis 
