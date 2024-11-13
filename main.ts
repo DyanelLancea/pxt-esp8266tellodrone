@@ -5,6 +5,7 @@ namespace TelloControl {
     // Initialize the connection variables
     let telloIP = "192.168.10.1";
     let commandPort = 8889;
+    const threshold = 200; // Thresholds to control sensitivity
 
     // Function to read and display response on the micro:bit
     function readResponse(): void {
@@ -44,6 +45,38 @@ namespace TelloControl {
         sendAT("AT+RST", 2000); // Reset the ESP8266
         sendAT("AT+CWMODE=1", 500); // Set ESP8266 to Station Mode (STA mode)
     }
+
+    
+    // Function to interpret accelerometer readings and control Tello
+    //% block="Use Microbit as a controller"
+    //% group="Tello"
+    function controlTelloWithAccelerometer(): void {
+        let x = input.acceleration(Dimension.X);
+        let y = input.acceleration(Dimension.Y);
+        let z = input.acceleration(Dimension.Z);
+
+        // Forward and backward control (Y-axis tilt, pitch)
+        if (y > threshold) {
+            sendCommandToTello("forward 20"); // Move forward
+        } else if (y < -threshold) {
+            sendCommandToTello("back 20"); // Move backward
+        }
+
+        // Left and right control (X-axis tilt, roll)
+        if (x > threshold) {
+            sendCommandToTello("right 20"); // Move right
+        } else if (x < -threshold) {
+            sendCommandToTello("left 20"); // Move left
+        }
+
+        // Up and down control (Z-axis tilt, yaw)
+        if (z < 800) { // micro:bit's resting Z-axis value is around 1023
+            sendCommandToTello("up 20"); // Move up
+        } else if (z > 1200) {
+            sendCommandToTello("down 20"); // Move down
+        }
+    }
+
 
     //% block="land"
     //% group="Tello"
