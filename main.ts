@@ -50,7 +50,7 @@ namespace TelloControl {
     // Function to interpret accelerometer readings and control Tello
     //% block="Use Microbit as a controller"
     //% group="Tello"
-    function controlTelloWithAccelerometer(): void {
+    export function controlTelloWithAccelerometer(): void {
         let x = input.acceleration(Dimension.X);
         let y = input.acceleration(Dimension.Y);
         let z = input.acceleration(Dimension.Z);
