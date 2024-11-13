@@ -57,26 +57,49 @@ namespace TelloControl {
 
         // Forward and backward control (Y-axis tilt, pitch)
         if (y > threshold) {
-            sendCommandToTello("forward 20"); // Move forward
+            while (y > threshold) { // Continuously move forward while tilted forward
+                sendCommandToTello("forward 20");
+                basic.pause(500); // Delay to prevent flooding commands
+                y = input.acceleration(Dimension.Y); // Update Y-axis to check tilt
+            }
         } else if (y < -threshold) {
-            sendCommandToTello("back 20"); // Move backward
+            while (y < -threshold) { // Continuously move backward while tilted backward
+                sendCommandToTello("back 20");
+                basic.pause(500);
+                y = input.acceleration(Dimension.Y); // Update Y-axis to check tilt
+            }
         }
 
         // Left and right control (X-axis tilt, roll)
         if (x > threshold) {
-            sendCommandToTello("right 20"); // Move right
+            while (x > threshold) { // Continuously move right while tilted right
+                sendCommandToTello("right 20");
+                basic.pause(500);
+                x = input.acceleration(Dimension.X); // Update X-axis to check tilt
+            }
         } else if (x < -threshold) {
-            sendCommandToTello("left 20"); // Move left
+            while (x < -threshold) { // Continuously move left while tilted left
+                sendCommandToTello("left 20");
+                basic.pause(500);
+                x = input.acceleration(Dimension.X); // Update X-axis to check tilt
+            }
         }
 
         // Up and down control (Z-axis tilt, yaw)
-        if (z < 800) { // micro:bit's resting Z-axis value is around 1023
-            sendCommandToTello("up 20"); // Move up
+        if (z < 800) {
+            while (z < 800) { // Continuously move up while tilted up
+                sendCommandToTello("up 20");
+                basic.pause(500);
+                z = input.acceleration(Dimension.Z); // Update Z-axis to check tilt
+            }
         } else if (z > 1200) {
-            sendCommandToTello("down 20"); // Move down
+            while (z > 1200) { // Continuously move down while tilted down
+                sendCommandToTello("down 20");
+                basic.pause(500);
+                z = input.acceleration(Dimension.Z); // Update Z-axis to check tilt
+            }
         }
     }
-
 
     //% block="land"
     //% group="Tello"
@@ -107,26 +130,21 @@ namespace TelloControl {
         }
     }
 
+    // Seting up UDP connection (2) and initialise the Tello into SDK mode (3)
+    //% group="Tello"
+    //% block="Initialise ESP and Tello connection"
+    export function setupUDPConnection(): void {
+        sendAT(`AT+CIPSTART="UDP","${telloIP}",${commandPort}`, 500);
+        basic.pause(500); // Allow some time for connection setup
+        sendCommandToTello("command");
+        basic.pause(500); // Allow some time for connection setup
+    }
+
     // Function to connect to Tello Wi-Fi (1)
     //% group="Tello"
     //% block="connect to Tello Wi-Fi SSID %ssid"
     export function connectToWiFi(ssid: string): void {
-        setupUDPConnection(); // Run once
         sendAT(`AT+CWJAP="${ssid}",""`, 5000); // Assuming no password is required
         readResponse(); // Display response on micro:bit
-    }
-
-    // Seting up UDP connection (2)
-    //% group="Tello"
-    //% block="Set up UDP connection"
-    export function setupUDPConnection(): void {
-        sendAT(`AT+CIPSTART="UDP","${telloIP}",${commandPort}`, 500);
-        basic.pause(500); // Allow some time for connection setup
-    }
-
-    //% block="initialize Tello into SDK mode"
-    //% group="Tello"
-    export function initialize(): void {
-        sendCommandToTello("command");
     }
 }
