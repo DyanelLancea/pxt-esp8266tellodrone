@@ -5,7 +5,7 @@ namespace TelloControl {
     // Initialize the connection variables
     let telloIP = "192.168.10.1";
     let commandPort = 8889;
-    const threshold = 200; // Thresholds to control sensitivity
+    const threshold = 15; // Thresholds to control sensitivity
 
     // Function to read and display response on the micro:bit
     function readResponse(): void {
@@ -54,6 +54,7 @@ namespace TelloControl {
         let x = input.acceleration(Dimension.X);
         let y = input.acceleration(Dimension.Y);
         let z = input.acceleration(Dimension.Z);
+
         // Forward and backward control (Y-axis tilt, pitch)
         if (Math.abs(y) > Math.abs(x) && Math.abs(y) > Math.abs(z)) {   // Determine the absolute strongest tilt axis
             if (y > threshold) {
