@@ -54,49 +54,29 @@ namespace TelloControl {
         let x = input.acceleration(Dimension.X);
         let y = input.acceleration(Dimension.Y);
         let z = input.acceleration(Dimension.Z);
-
         // Forward and backward control (Y-axis tilt, pitch)
-        if (y > threshold) {
-            while (y > threshold) { // Continuously move forward while tilted forward
-                sendCommandToTello("forward 20");
-                basic.pause(500); // Delay to prevent flooding commands
-                y = input.acceleration(Dimension.Y); // Update Y-axis to check tilt
+        if (Math.abs(y) > Math.abs(x) && Math.abs(y) > Math.abs(z)) {   // Determine the absolute strongest tilt axis
+            if (y > threshold) {
+                sendCommandToTello("forward 20"); // Move forward
+            } else if (y < -threshold) {
+                sendCommandToTello("back 20"); // Move backward
             }
-        } else if (y < -threshold) {
-            while (y < -threshold) { // Continuously move backward while tilted backward
-                sendCommandToTello("back 20");
-                basic.pause(500);
-                y = input.acceleration(Dimension.Y); // Update Y-axis to check tilt
-            }
-        }
-
+        } 
         // Left and right control (X-axis tilt, roll)
-        if (x > threshold) {
-            while (x > threshold) { // Continuously move right while tilted right
-                sendCommandToTello("right 20");
-                basic.pause(500);
-                x = input.acceleration(Dimension.X); // Update X-axis to check tilt
-            }
-        } else if (x < -threshold) {
-            while (x < -threshold) { // Continuously move left while tilted left
-                sendCommandToTello("left 20");
-                basic.pause(500);
-                x = input.acceleration(Dimension.X); // Update X-axis to check tilt
+        else if (Math.abs(x) > Math.abs(y) && Math.abs(x) > Math.abs(z)) {
+            if (x > threshold) {
+                sendCommandToTello("right 20"); // Move right
+            } else if (x < -threshold) {
+                sendCommandToTello("left 20"); // Move left
             }
         }
-
         // Up and down control (Z-axis tilt, yaw)
-        if (z < 800) {
-            while (z < 800) { // Continuously move up while tilted up
-                sendCommandToTello("up 20");
-                basic.pause(500);
-                z = input.acceleration(Dimension.Z); // Update Z-axis to check tilt
-            }
-        } else if (z > 1200) {
-            while (z > 1200) { // Continuously move down while tilted down
-                sendCommandToTello("down 20");
-                basic.pause(500);
-                z = input.acceleration(Dimension.Z); // Update Z-axis to check tilt
+        else if (Math.abs(z) > Math.abs(x) && Math.abs(z) > Math.abs(y)) {
+            // Z-axis tilt is the strongest
+            if (z < 800) { // Assuming resting Z-axis is around 1023
+                sendCommandToTello("up 20"); // Move up
+            } else if (z > 1200) {
+                sendCommandToTello("down 20"); // Move down
             }
         }
     }
