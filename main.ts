@@ -5,11 +5,13 @@ namespace TelloControl {
     // Initialize the variables
     let telloIP = "192.168.10.1";
     let commandPort = 8889;
-    const threshold = 20; // Threshold to control sensitivity
     let wifi_connected: boolean = false
 
-    // Function to read and display response on the micro:bit
-    function readResponse(): void {
+
+    // Function to read and display response on the micro:bit. Users can use this for debugging connection with the Tello drone
+    //% block="Read Response" 
+    //% group="Tello"
+    export function readResponse(): void {
         let response = serial.readString();
         if (response.includes("OK")) {
             basic.showString("Connected");
@@ -26,7 +28,6 @@ namespace TelloControl {
         sendAT(`AT+CIPSEND=${command.length}`, 500);  // Send command length and command
         serial.writeString(command + "\r\n"); // Send the actual command
         basic.pause(500);
-        readResponse(); // Display Tello's response
     }
 
     function sendAT(command: string, wait: number = 0) {
@@ -58,15 +59,8 @@ namespace TelloControl {
     }
 
 
-    // Function to connect to Tello Wi-Fi (2)
-    //% group="Tello"
-    //% block="connect to Tello Wi-Fi SSID %ssid"
-    export function connectToWiFi(ssid: string): void {
-        sendAT(`AT+CWJAP="${ssid}",""`, 5000); // No password is required
-        readResponse(); // Display response on micro:bit
-    }
 
-    //% block="FLip"
+    //% block="Flip"
     //% group="Tello"
     export function flip(): void {
         sendCommandToTello("flip b");
@@ -81,25 +75,25 @@ namespace TelloControl {
     //% block="Move right"
     //% group="Tello"
     export function right(): void {
-        sendCommandToTello("right 20");
+        sendCommandToTello("right");
     }
 
     //% block="Move Left"
     //% group="Tello"
     export function left(): void {
-        sendCommandToTello("left 20");
+        sendCommandToTello("left");
     }
 
     //% block="Move Back"
     //% group="Tello"
     export function back(): void {
-        sendCommandToTello("back 20");
+        sendCommandToTello("back");
     }
 
     //% block="Move Forward"
     //% group="Tello"
     export function forward(): void {
-        sendCommandToTello("forward 20");
+        sendCommandToTello("forward");
     }
 
     //% block="Land"
@@ -125,4 +119,10 @@ namespace TelloControl {
         basic.pause(500); // Allow some time for connection setup
     }
 
+    // Function to connect to Tello Wi-Fi (2)
+    //% group="Tello"
+    //% block="connect to Tello Wi-Fi SSID %ssid"
+    export function connectToWiFi(ssid: string): void {
+        sendAT(`AT+CWJAP="${ssid}",""`, 5000); // No password is required
+    }
 }
