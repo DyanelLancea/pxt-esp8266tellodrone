@@ -1,6 +1,3 @@
-//% color=#126180 icon="\uf0fb" block="Tello Drone Control"
-//% groups="['ESP8266', 'Tello']"
-
 namespace TelloControl {
     // Initialize the variables
     let telloIP = "192.168.10.1";
@@ -37,7 +34,8 @@ namespace TelloControl {
     //% rx.defl=SerialPin.P12
     export function initESP8266(tx: SerialPin, rx: SerialPin): void {
         serial.redirect(tx, rx, BaudRate.BaudRate115200); // Redirect TX and RX
-        basic.pause(100);
+        //basic.pause(100);
+        sendAT("AT+CIPSTO:<20000>", 2000); // Reset the ESP8266
         serial.setTxBufferSize(128);
         serial.setRxBufferSize(128);
 
@@ -100,11 +98,11 @@ namespace TelloControl {
         sendAT("AT+CWJAP?"); // Checks the current Wi-Fi status
         basic.pause(500); // Give time to get the response
 
-        let response = serial.readString(); // Reads response from ESP8266
+        let response2 = serial.readString(); // Reads response from ESP8266
 
-        if (response.includes("No AP")) {
+        if (response2.includes("No AP")) {
             return false; // Not connected
-        } else if (response.includes("OK") || response.includes("Connected")) {
+        } else if (response2.includes("OK") || response2.includes("Connected")) {
             return true; // Connected
         } else {
             return false; // In case of other unexpected responses
