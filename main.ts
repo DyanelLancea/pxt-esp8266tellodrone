@@ -24,10 +24,10 @@ namespace TelloControl {
     // Assuming you have already intialised the ESP8266, connected to Tello WiFi (2), 
     // have set up UDP connection (3), and initialisd the Tello into SDK mode (4)
     function sendCommandToTello(command: string): void {
-
         sendAT(`AT+CIPSEND=${command.length}`, 500);  // Send command length and command
         serial.writeString(command + "\r\n"); // Send the actual command
         basic.pause(500);
+        readResponse();
     }
 
     function sendAT(command: string, wait: number = 0) {
