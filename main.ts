@@ -36,13 +36,6 @@ namespace TelloControl {
     }
 
 
-    //Booleon for users to check if the ESP8266 is connect to a WiFi
-    //% block="Wifi connected %State" weight=70
-    //% group="ESP8266"
-    export function wifiState(state: boolean) {
-        return wifi_connected === state
-    }
-
     // Function to initialize ESP8266 and redirect serial communication (1)
     //% block="Initialize ESP8266 with TX %tx| RX %rx"
     //% group="ESP8266"
@@ -124,5 +117,6 @@ namespace TelloControl {
     //% block="connect to Tello Wi-Fi SSID %ssid"
     export function connectToWiFi(ssid: string): void {
         sendAT(`AT+CWJAP="${ssid}",""`, 5000); // No password is required
+        readResponse();
     }
 }
