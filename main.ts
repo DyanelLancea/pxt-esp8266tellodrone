@@ -5,7 +5,6 @@ namespace TelloControl {
     // Initialize the variables
     let telloIP = "192.168.10.1";
     let commandPort = 8889;
-    let wifi_connected: boolean = false
 
 
     // Function to read and display response on the micro:bit. Users can use this for debugging connection with the Tello drone
@@ -117,6 +116,7 @@ namespace TelloControl {
     //% block="connect to Tello Wi-Fi SSID %ssid"
     export function connectToWiFi(ssid: string): void {
         sendAT(`AT+CWJAP="${ssid}",""`, 5000); // No password is required
+        basic.pause(500); // Allow some time for connection setup
         readResponse();
     }
 }
