@@ -6,11 +6,8 @@ namespace TelloControl {
     let telloIP = "192.168.10.1";
     let commandPort = 8889;
 
-
-    // Function to read and display response on the micro:bit. Users can use this for debugging connection with the Tello drone
-    //% block="Read Response" 
-    //% group="Tello"
-    export function readResponse(): void {
+    // Function to read and display response on the micro:bit
+    function readResponse(): void {
         let response = serial.readString();
         if (response.includes("OK")) {
             basic.showString("Connected");
@@ -20,13 +17,12 @@ namespace TelloControl {
         }
     }
 
-    // Assuming you have already intialised the ESP8266, connected to Tello WiFi (2), 
-    // have set up UDP connection (3), and initialisd the Tello into SDK mode (4)
     function sendCommandToTello(command: string): void {
+        // Assuming you're already connected to Tello WiFi, have set up UDP connection and initialisd the Tello into SDK mode
         sendAT(`AT+CIPSEND=${command.length}`, 500);  // Send command length and command
         serial.writeString(command + "\r\n"); // Send the actual command
         basic.pause(500);
-        readResponse();
+        readResponse(); // Display Tello's response
     }
 
     function sendAT(command: string, wait: number = 0) {
@@ -34,9 +30,8 @@ namespace TelloControl {
         basic.pause(wait);
     }
 
-
-    // Function to initialize ESP8266 and redirect serial communication (1)
-    //% block="Initialize ESP8266 with TX %tx| RX %rx"
+    // Function to initialize ESP8266 and redirect serial communication
+    //% block="initialize ESP8266 with TX %tx| RX %rx"
     //% group="ESP8266"
     //% tx.defl=SerialPin.P8
     //% rx.defl=SerialPin.P12
@@ -49,7 +44,6 @@ namespace TelloControl {
         sendAT("AT+RST", 2000); // Reset the ESP8266
         sendAT("AT+CWMODE=1", 500); // Set ESP8266 to Station Mode (STA mode)
     }
-
 
 
     //% block="Flip"
@@ -88,20 +82,36 @@ namespace TelloControl {
         sendCommandToTello("forward");
     }
 
-    //% block="Land"
+    //% block="land"
     //% group="Tello"
     export function land(): void {
         sendCommandToTello("land");
     }
 
-    //% block="Takeoff"
+    //% block="takeoff"
     //% group="Tello"
     export function takeOff(): void {
         sendCommandToTello("takeoff");
     }
 
+    //% block="Wi-Fi connected"
+    //% group="ESP8266"
+    export function isWiFiConnected(): boolean {
+        sendAT("AT+CWJAP?"); // Checks the current Wi-Fi status
+        basic.pause(500); // Give time to get the response
 
-    // Seting up UDP connection (3) and initialise the Tello into SDK mode (4)
+        let response = serial.readString(); // Reads response from ESP8266
+
+        if (response.includes("No AP")) {
+            return false; // Not connected
+        } else if (response.includes("OK") || response.includes("Connected")) {
+            return true; // Connected
+        } else {
+            return false; // In case of other unexpected responses
+        }
+    }
+
+    // Seting up UDP connection (2) and initialise the Tello into SDK mode (3)
     //% group="Tello"
     //% block="Initialise ESP and Tello connection"
     export function setupUDPConnection(): void {
@@ -111,12 +121,11 @@ namespace TelloControl {
         basic.pause(500); // Allow some time for connection setup
     }
 
-    // Function to connect to Tello Wi-Fi (2)
+    // Function to connect to Tello Wi-Fi (1)
     //% group="Tello"
     //% block="connect to Tello Wi-Fi SSID %ssid"
     export function connectToWiFi(ssid: string): void {
         sendAT(`AT+CWJAP="${ssid}",""`, 5000); // No password is required
-        basic.pause(500); // Allow some time for connection setup
-        readResponse();
+        readResponse(); // Display response on micro:bit
     }
 }
